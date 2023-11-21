@@ -38,12 +38,28 @@
             font-weight: bold;
         }
 
+        #onlineIndicator {
+            color: #fff;
+            margin-right: 10px;
+            color: #add8e6; /* Light blue color */
+        }
+
+        #typingIndicator {
+            color: #fff;
+            margin-right: 10px;
+            color: #add8e6; /* Light blue color */
+        }
+
         #messages {
             flex: 1;
             overflow-y: scroll;
             padding: 10px;
             border-bottom: 1px solid #2f3136;
             color: #fff;
+        }
+
+        #messages a {
+            color: #add8e6; /* Light blue color for links in messages */
         }
 
         #inputContainer {
@@ -58,7 +74,7 @@
             border: none;
             border-radius: 4px;
             margin-right: 10px;
-            background-color: #40444b;
+            background-color: #40444b; /* Original color */
             color: #fff;
         }
 
@@ -82,12 +98,13 @@
         <img id="logo" src="logo.png" alt="Logo" onclick="playSong()">
         <div>by: Lusans2002  |  Luizcard the number 1 LCMS chatting website  | <STRONG> Your Username:⠀</STRONG></div>
         <div id="userIndicator"></div>
+        <div id="onlineIndicator"></div>
+        <div id="typingIndicator"></div>
     </div>
     <div id="messages"></div>
     <div id="inputContainer">
-        <!-- Removed the text input for choosing username -->
-        <input type="text" id="messageInput" placeholder="Type your message">
-        <button id="sendButton">Send</button>
+        <input type="text" id="messageInput" placeholder="Type your message" oninput="typingIndicator()" onkeydown="handleKeyDown(event)">
+        <button id="sendButton" onclick="sendMessage()">Send</button>
     </div>
 
     <script>
@@ -102,41 +119,85 @@
 
         ably.connection.on('connected', () => {
             console.log('Connected to Ably');
+            
+            // Set up presence
+            const presence = channel.presence;
+            
+            // Update online indicator
+            updateOnlineIndicator(presence);
+            
+            // Subscribe to presence events
+            presence.subscribe('enter', (member) => updateOnlineIndicator(presence));
+            presence.subscribe('leave', (member) => updateOnlineIndicator(presence));
         });
 
         channel.subscribe((message) => {
             const messagesContainer = document.getElementById('messages');
             const messageElement = document.createElement('div');
-            messageElement.textContent = message.data;
+            // Format the message to make links clickable
+            messageElement.innerHTML = formatMessage(message.data);
             messagesContainer.appendChild(messageElement);
+
+            // Clear typing indicator when a message is received
+            clearTypingIndicator();
         });
 
-        // Simple send message function
+        // Function to format the message and make links clickable
+        function formatMessage(messageText) {
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return messageText.replace(urlRegex, (url) => `<a href="${url}" target="_blank">${url}</a>`);
+        }
+
+        // Function to play the song
+        function playSong() {
+            const audio = new Audio('Ringer.mp3');
+            audio.play();
+        }
+
+        // Function to update online indicator
+        function updateOnlineIndicator(presence) {
+            document.getElementById('onlineIndicator').textContent = `Online: ${presence.members.length}`;
+        }
+
+        // Function to send a message
         function sendMessage() {
             const messageInput = document.getElementById('messageInput');
             const messageText = messageInput.value;
             if (messageText.trim() !== '') {
                 channel.publish('new_chat_message', `${document.getElementById('userIndicator').textContent}: ${messageText}`);
                 messageInput.value = '';
+
+                // Clear typing indicator after sending a message
+                clearTypingIndicator();
             }
         }
 
-        // Event listeners for the send button and Enter key
-        const sendButton = document.getElementById('sendButton');
-        sendButton.addEventListener('click', sendMessage);
+        // Function to update typing indicator
+        function typingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            const messageInput = document.getElementById('messageInput');
+            
+            // If the input is not empty, show the typing indicator
+            if (messageInput.value.trim() !== '') {
+                typingIndicator.textContent = 'Typing...';
+            } else {
+                // Otherwise, clear the typing indicator
+                clearTypingIndicator();
+            }
+        }
 
-        const messageInput = document.getElementById('messageInput');
-        messageInput.addEventListener('keydown', function(event) {
+        // Function to clear typing indicator
+        function clearTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            typingIndicator.textContent = '';
+        }
+
+        // Function to handle Enter key press
+        function handleKeyDown(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault(); // Prevents new line character
                 sendMessage();
             }
-        });
-
-        // Function to play the song
-        function playSong() {
-            const audio = new Audio('Ringer.mp3');
-            audio.play();
         }
     </script>
 </body>
