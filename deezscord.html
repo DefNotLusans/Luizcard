@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luizcard</title>
+    <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #36393f;
+        }
+
+        #header {
+            position: relative;
+            padding: 10px;
+            border-bottom: 1px solid #2f3136;
+            display: flex;
+            align-items: center;
+            color: #fff;
+        }
+
+        #logo {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+        }
+
+        #userIndicator {
+            flex: 1;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        #messages {
+            flex: 1;
+            overflow-y: scroll;
+            padding: 10px;
+            border-bottom: 1px solid #2f3136;
+            color: #fff;
+        }
+
+        #inputContainer {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #2f3136;
+        }
+
+        #usernameInput {
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            margin-right: 10px;
+            background-color: #40444b;
+            color: #fff;
+            display: none; /* Updated this line to hide the username input */
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            margin-right: 10px;
+            background-color: #40444b;
+            color: #fff;
+        }
+
+        #sendButton {
+            padding: 8px;
+            cursor: pointer;
+            background-color: #7289da;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        #sendButton:hover {
+            background-color: #677bc4;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <img id="logo" src="logo.png" alt="Logo">
+        <div>by: Lusans2002  |  Luizcard the number 1 LCMS chatting website  | <STRONG> Your Username:⠀</STRONG></div>
+        <div id="userIndicator"></div>
+    </div>
+    <div id="messages"></div>
+    <div id="inputContainer">
+        <!-- Removed the text input for choosing username -->
+        <input type="text" id="messageInput" placeholder="Type your message">
+        <button id="sendButton">Send</button>
+    </div>
+
+    <script>
+        // Ably connection
+        const apiKey = 'YucrGQ.fyjcwg:TqODowtZ-TWDJ3z0-jICG8OE9SKT5AHgehonAQd3Csk'; // Replace with your Ably API key
+        const ably = new Ably.Realtime({ key: apiKey });
+        const channel = ably.channels.get('my_chat_channel'); // Replace with your desired channel name
+
+        // Prompt for username
+        const username = prompt("Enter your username:") || 'Anonymous';
+        document.getElementById('userIndicator').textContent = `${username}`;
+
+        ably.connection.on('connected', () => {
+            console.log('Connected to Ably');
+        });
+
+        channel.subscribe((message) => {
+            const messagesContainer = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message.data;
+            messagesContainer.appendChild(messageElement);
+        });
+
+        // Simple send message function
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const messageText = messageInput.value;
+            if (messageText.trim() !== '') {
+                channel.publish('new_chat_message', `${document.getElementById('userIndicator').textContent}: ${messageText}`);
+                messageInput.value = '';
+            }
+        }
+
+        // Event listeners for the send button and Enter key
+        const sendButton = document.getElementById('sendButton');
+        sendButton.addEventListener('click', sendMessage);
+
+        const messageInput = document.getElementById('messageInput');
+        messageInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); // Prevents new line character
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
