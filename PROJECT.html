@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luizcard</title>
+    <title>Ably Realtime Chat</title>
     <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
     <style>
         body {
@@ -29,6 +29,7 @@
             width: 32px;
             height: 32px;
             margin-right: 10px;
+            cursor: pointer; /* Added this line to make the cursor change to a pointer on hover */
         }
 
         #userIndicator {
@@ -49,16 +50,6 @@
             display: flex;
             padding: 10px;
             border-top: 1px solid #2f3136;
-        }
-
-        #usernameInput {
-            padding: 8px;
-            border: none;
-            border-radius: 4px;
-            margin-right: 10px;
-            background-color: #40444b;
-            color: #fff;
-            display: none; /* Updated this line to hide the username input */
         }
 
         #messageInput {
@@ -88,7 +79,7 @@
 </head>
 <body>
     <div id="header">
-        <img id="logo" src="logo.png" alt="Logo">
+        <img id="logo" src="logo.png" alt="Logo" onclick="playSong()">
         <div>by: Lusans2002  |  Luizcard the number 1 LCMS chatting website  | <STRONG> Your Username:⠀</STRONG></div>
         <div id="userIndicator"></div>
     </div>
@@ -141,6 +132,12 @@
                 sendMessage();
             }
         });
+
+        // Function to play the song
+        function playSong() {
+            const audio = new Audio('Ringer.mp3');
+            audio.play();
+        }
     </script>
 </body>
 </html>
